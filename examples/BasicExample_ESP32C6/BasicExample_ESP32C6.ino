@@ -179,13 +179,14 @@ void loop() {
 void checkAndPrintWiFiStatus() {
   status = WiFi.status();
   while (status != WL_CONNECTED) {
-    WiFi.disconnect();
+    Serial.print("Lost connection - attempting to re-connect to SSID: ");
+    WiFi.reconnect();
+    WiFi.setSleep(false);
     // wait 10 seconds before trying to connect again
     delay(10000);
-    Serial.print("Lost connection - attempting to re-connect to SSID: ");
     Serial.println(ssid);
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-    status = WiFi.begin(ssid, pass);
+    status = WiFi.status();
   }
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
@@ -202,3 +203,4 @@ void checkAndPrintWiFiStatus() {
   Serial.print(rssi);
   Serial.println(" dBm");
 }
+
