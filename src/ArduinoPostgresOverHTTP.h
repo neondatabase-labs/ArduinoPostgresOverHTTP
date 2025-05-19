@@ -1,7 +1,9 @@
-// ArduinoPostgresOverHttpProxyClient begin
+// ArduinoPostgresOverHTTP example - https://github.com/neondatabase-labs/ArduinoPostgresOverHTTP
+// Copyright © 2025, Peter Bendel and neondatabase labs (neon.tech)
+// MIT License
+
 #ifndef ARDUINOPOSTGRESOVERHTTPPROXYCLIENT_H
 #define ARDUINOPOSTGRESOVERHTTPPROXYCLIENT_H
-// TODO determine how to package a library that itself depends on ArduinoJson library >= version 7.3
 #include <ArduinoJson.h>
 #include "WiFiClient.h"
 #include <cstring>
@@ -217,4 +219,3 @@ private:
 };
 
 #endif /* ArduinoPostgresOverHttpProxyClient_H */
-// ArduinoPostgresOverHttpProxyClient end
