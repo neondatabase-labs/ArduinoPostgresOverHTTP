@@ -13,7 +13,7 @@ To allow different Wifi client implementations the library does not define a dep
 Instead you need to manually install a Wifi client library that implements the `WiFiClient` interface that matches your microcontroller.
 This library has been tested with the following Wifi client libraries:
 - [WiFiNINA](https://docs.arduino.cc/libraries/wifinina/)  e.g. for Arduino RP2040 Connect
-- [ESP8266WiFi] https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WiFi/src/WiFiClient.h
+- [ESP8266WiFi](https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WiFi/src/WiFiClient.h)
 
 ## Usage overview
 
@@ -112,11 +112,11 @@ This library is used to create and parse the JSON payloads that are sent to and 
 
 ## API Getting Started
 
-See src/ArduinoPostgresOverHTTP.h for the latest API reference.
+See [src/ArduinoPostgresOverHTTP.h](src/ArduinoPostgresOverHTTP.h) for the latest API reference.
 
 ### Provisioning a PostgreSQL database on Neon and getting the connection URL and Neon proxy hostname
 
-Signing up for a free Neon account (no credit card required) is easy. Just go to https://neon.tech and click on "Get started for free".
+Signing up for a free Neon account (no credit card required) is easy. Just go to https://neon.tech and click on "Start for free".
 For more documentation see https://neon.tech/docs/get-started-with-neon/signing-up
 
 In Neon every database is part of a project.
@@ -145,16 +145,17 @@ Here is a table that helps you find the correct Neon proxy hostname for your reg
 
 and so on
 
-### Provisioning the Neon Proxy with your own PostgeSQL database
+### Provisioning the Neon Proxy with your own PostgreSQL database
 
 See https://github.com/TimoWilhelm/local-neon-http-proxy
 
 ### Establishing a database connection
 
-Copy arduino_secrets.h.example to arduino_secrets.h and fill in the values for your Wifi network and PostgreSQL database connection.
+Copy [arduino_secrets.h.example](arduino_secrets.h.example) to arduino_secrets.h and fill in the values for your Wifi network and PostgreSQL database connection.
 
 ```C
 #include <WiFiNINA.h>
+#include "arduino_secrets.h" // copy arduino_secrets.h.example to arduino_secrets.h and fill in your secrets
 #include <ArduinoPostgresOverHTTP.h>
 ...
 WiFiSSLClient client;
@@ -177,23 +178,110 @@ todo
 
 ### Executing a single query
 
-todo
+```C
+const char* insert = R"SQL(
+INSERT INTO SENSORVALUES (sensor_name, sensor_value) VALUES ('counter', 1:int)
+)SQL";
+
+sqlClient.setQuery(insert);
+// following two lines optional, only if params have been used before
+// otional: JsonArray params = sqlClient.getParams(); 
+// optional: params.clear(); 
+const char* errorMessage = sqlClient.execute();
+if (errorMessage != nullptr) {
+    Serial.println(errorMessage);
+}
+```
 
 ### Run a SQL statement with parameters
 
-todo
+```C
+const char* insertSensorValue = R"SQL(
+INSERT INTO SENSORVALUES (sensor_name, sensor_value) VALUES ($1::text, $2::float)
+)SQL";
+
+// example uses #include "DHT.h" from https://github.com/Seeed-Studio/Grove_Temperature_And_Humidity_Sensor
+float temp_hum_val[2] = { 0 };
+dht.readTempAndHumidity(temp_hum_val);
+
+Serial.println("\nExecuting insert statement for temperature...");
+  sqlClient.setQuery(insertSensorValue);
+  JsonArray params = sqlClient.getParams();
+  params.clear();
+  params.add("temperature");
+  params.add(temp_hum_val[1]);
+  const char* errorMessage = sqlClient.execute();
+  if (errorMessage != nullptr) {
+    Serial.println(errorMessage);
+  }
+```
 
 ### Retrieving a result set
 
-todo
+```C
+const char* query = R"SQL(
+SELECT sensor_name, measure_time, sensor_value
+FROM sensorvalues
+WHERE sensor_name = 'counter'
+  AND measure_time >= now() - interval '1 minutes'
+ORDER BY measure_time DESC LIMIT 3;
+)SQL";
+
+Serial.println("\nRetrieving last 3 sensor values...");
+  sqlClient.setQuery(query);
+  params.clear();
+  errorMessage = sqlClient.execute();
+
+  if (errorMessage == nullptr) {
+    Serial.print("Rowcount: ");
+    Serial.println(sqlClient.getRowCount());
+    JsonArray rows = sqlClient.getRows();
+    for (JsonObject row : rows) {
+      const char* measure_time = row["measure_time"];  // "2025-01-01 09:54:26.966508", ...
+      const char* sensor_name = row["sensor_name"];    // "counter"
+      float sensor_value = row["sensor_value"];
+      Serial.print("Time: ");
+      Serial.print(measure_time);
+      Serial.print(" Sensor: ");
+      Serial.print(sensor_name);
+      Serial.print(" Value: ");
+      Serial.println(sensor_value);
+    }
+  }
+```
 
 ### Running multiple statements in a transaction
 
 todo
 
-### Error handling
+### Error handling and debugging
 
-todo
+```C
+const char* query = R"SQL(
+SELECT sensor_name, measure_time, sensor_value
+FROM sensorvalues
+WHERE sensor_name = 'counter'
+  AND measure_time >= now() - interval '1 minutes'
+ORDER BY measure_time DESC LIMIT 3;
+)SQL";
+
+Serial.println("\nRetrieving last 3 sensor values...");
+  sqlClient.setQuery(query);
+  params.clear();
+  errorMessage = sqlClient.execute();
+  // to debug:
+  serializeJson(sqlClient.getRawJsonResult(), Serial);
+  // or:
+  sqlClient.printRawJsonResult(Serial);
+
+  if (errorMessage != nullptr) {
+    // to print the error message
+    Serial.println(errorMessage);
+  } else {
+    // process result...
+    }
+  }
+```
 
 ### Reading and writing different PostgreSQL data types
 
