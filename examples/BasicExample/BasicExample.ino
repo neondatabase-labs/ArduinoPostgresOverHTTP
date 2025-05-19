@@ -1,4 +1,4 @@
-// ArduinoPostgresOverHTTP example - https://github.com/neondatabase-labs/ArduinoPostgresOverHTTP
+// NeonPostgresOverHTTP example - https://github.com/neondatabase-labs/NeonPostgresOverHTTP
 // Copyright © 2025, Peter Bendel and neondatabase labs (neon.tech)
 // MIT License
 
@@ -51,7 +51,7 @@
 #include <SPI.h>
 #include <WiFiNINA.h> // use WifiClient implementation for your microcontroller
 #include "arduino_secrets.h" // copy arduino_secrets.h.example to arduino_secrets.h and fill in your secrets
-#include <ArduinoPostgresOverHttp.h>
+#include <NeonPostgresOverHTTP.h>
 
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
 char ssid[] = SECRET_SSID;  // your network SSID (name)
@@ -63,7 +63,7 @@ int status = WL_IDLE_STATUS;
 // with the IP address and port of the server
 // that you want to connect to (port 80 is default for HTTP):
 WiFiSSLClient client;
-ArduinoPostgresOverHttpProxyClient sqlClient(client, DATABASE_URL, NEON_PROXY);
+NeonPostgresOverHTTPProxyClient sqlClient(client, DATABASE_URL, NEON_PROXY);
 
 const char* create = R"SQL(
 CREATE TABLE if not exists sensorvalues(

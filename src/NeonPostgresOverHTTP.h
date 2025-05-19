@@ -1,14 +1,14 @@
-// ArduinoPostgresOverHTTP example - https://github.com/neondatabase-labs/ArduinoPostgresOverHTTP
+// NeonPostgresOverHTTP example - https://github.com/neondatabase-labs/NeonPostgresOverHTTP
 // Copyright © 2025, Peter Bendel and neondatabase labs (neon.tech)
 // MIT License
 
-#ifndef ARDUINOPOSTGRESOVERHTTPPROXYCLIENT_H
-#define ARDUINOPOSTGRESOVERHTTPPROXYCLIENT_H
+#ifndef NEONPOSTGRESOVERTTPPROXYCLIENT_H
+#define NEONPOSTGRESOVERHTTPPROXYCLIENT_H
 #include <ArduinoJson.h>
 #include "WiFiClient.h"
 #include <cstring>
 
-class ArduinoPostgresOverHttpProxyClient {
+class NeonPostgresOverHTTPProxyClient {
 public:
 
   /**
@@ -34,15 +34,15 @@ public:
      * ```
      * @param neonPostgresConnectionString A connection string that connects to the Neon database, for example
      *                                     "postgresql://neondb_owner:password@ep-hungry-bird-4242.eu-central-1.aws.neon.tech/neondb?sslmode=require".
-     *                                     This pointer/buffer must be valid for the complete lifetime of the ArduinoPostgresOverHttpProxyClient, it is NOT 
+     *                                     This pointer/buffer must be valid for the complete lifetime of the NeonPostgresOverHTTPProxyClient, it is NOT 
      *                                     copied
      * @param neonProxy The hostname of the neon proxy. Usually it can be easily derived from the connection string by extracting the hostname
      *                  as "api.<hostname>" for example "api.eu-central-1.aws.neon.tech".
-     *                  This pointer/buffer must be valid for the complete lifetime of the ArduinoPostgresOverHttpProxyClient, it is NOT 
+     *                  This pointer/buffer must be valid for the complete lifetime of the NeonPostgresOverHTTPProxyClient, it is NOT 
      *                  copied
      * @param proxyPort Proxy listening port. Usually 443 for https.
      */
-  ArduinoPostgresOverHttpProxyClient(WiFiClient& client, const char* neonPostgresConnectionString, const char* neonProxy, int proxyPort = 443)
+  NeonPostgresOverHTTPProxyClient(WiFiClient& client, const char* neonPostgresConnectionString, const char* neonProxy, int proxyPort = 443)
     : client(client), connstr(neonPostgresConnectionString), proxy(neonProxy), proxyPort(proxyPort) {
     request.clear();
     response.clear();
@@ -218,4 +218,4 @@ private:
   char status[32];
 };
 
-#endif /* ArduinoPostgresOverHttpProxyClient_H */
+#endif /* NeonPostgresOverHTTPProxyClient_H */

@@ -1,6 +1,6 @@
-# ArduinoPostgresOverHTTP library
+# NeonPostgresOverHTTP library
 
-ArduinoPostgresOverHTTP is a library for Arduino and Arduino-compatible micro-controllers that allows you to connect to a PostgreSQL database over HTTP.
+NeonPostgresOverHTTP is a library for Arduino and Arduino-compatible micro-controllers that allows you to connect to a PostgreSQL database over HTTP.
 
 This can be used to store sensor data directly into a PostgreSQL database without a middleman server like home assistant.
 You can also read values from the database and use them to control actuators.
@@ -20,10 +20,10 @@ This library has been tested with the following Wifi client libraries:
 ```C
 ...
 #include <WiFiNINA.h>
-#include <ArduinoPostgresOverHTTP.h>
+#include <NeonPostgresOverHTTP.h>
 ...
 WiFiSSLClient client;
-ArduinoPostgresOverHttpProxyClient sqlClient(client, DATABASE_URL, NEON_PROXY);
+NeonPostgresOverHTTPProxyClient sqlClient(client, DATABASE_URL, NEON_PROXY);
 
 const char* create = R"SQL(
 CREATE TABLE if not exists sensorvalues(
@@ -112,7 +112,7 @@ This library is used to create and parse the JSON payloads that are sent to and 
 
 ## API Getting Started
 
-See [src/ArduinoPostgresOverHTTP.h](src/ArduinoPostgresOverHTTP.h) for the latest API reference.
+See [src/NeonPostgresOverHTTP.h](src/NeonPostgresOverHTTP.h) for the latest API reference.
 
 ### Provisioning a PostgreSQL database on Neon and getting the connection URL and Neon proxy hostname
 
@@ -156,10 +156,10 @@ Copy [arduino_secrets.h.example](arduino_secrets.h.example) to arduino_secrets.h
 ```C
 #include <WiFiNINA.h>
 #include "arduino_secrets.h" // copy arduino_secrets.h.example to arduino_secrets.h and fill in your secrets
-#include <ArduinoPostgresOverHTTP.h>
+#include <NeonPostgresOverHTTP.h>
 ...
 WiFiSSLClient client;
-ArduinoPostgresOverHttpProxyClient sqlClient(client, DATABASE_URL, NEON_PROXY);
+NeonPostgresOverHTTPProxyClient sqlClient(client, DATABASE_URL, NEON_PROXY);
 
 char ssid[] = SECRET_SSID;  // your network SSID (name)
 char pass[] = SECRET_PASS;  // your network password (use for WPA, or use as key for WEP)
