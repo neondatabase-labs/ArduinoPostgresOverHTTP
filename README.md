@@ -33,7 +33,8 @@ To allow different Wifi client implementations the library does not define a dep
 Instead you need to manually install a Wifi client library that implements the `WiFiClient` interface that matches your microcontroller.
 This library has been tested with the following Wifi client libraries:
 - [WiFiNINA](https://docs.arduino.cc/libraries/wifinina/)  e.g. for Arduino RP2040 Connect
-- [ESP8266WiFi](https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WiFi/src/WiFiClient.h)
+- [Espressif ESP32 Wifi library](https://github.com/espressif/arduino-esp32/tree/master/libraries/WiFi) - tested with XIAO ESP32C6
+  - see [examples/BasicExample_ESP32C6](examples/BasicExample_ESP32C6) with XIAO ESP32C6
 
 ## Usage overview
 
@@ -108,7 +109,7 @@ You can also deploy the open source Neon Proxy on your own server or with other 
 See https://github.com/TimoWilhelm/local-neon-http-proxy
 
 ### Wifi
-You need a microontroller fast enough to run an SSL client (like BearSSL) and a Wifi client (like WiFiNINA or WiFiEsp32).
+You need a microontroller fast enough to run an SSL client (like BearSSL) and a Wifi client (like WiFiNINA or Espressif ESP32 Wifi library).
 
 Your Wifi controller must have a supported library that implements the WiFiClient.h WifiClient interface
 
@@ -121,7 +122,7 @@ class WiFiClient : public Client {
 
 for example 
 - Arduino WifiNINA https://docs.arduino.cc/libraries/wifinina/
-- ESP8266WiFi https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WiFi/src/WiFiClient.h
+- [Espressif ESP32 Wifi library](https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFi.h)
 
 ### ArduinoJson library
 
