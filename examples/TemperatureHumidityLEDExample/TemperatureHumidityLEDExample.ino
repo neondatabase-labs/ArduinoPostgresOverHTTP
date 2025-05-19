@@ -15,6 +15,16 @@
 // This can be used to control the LED from a remote location by sending a command to the database.
 // The LED state is confirmed back to the database once the command is applied.
 //
+// In your postgres database you can switch on and off the LED on the microcontroller by executing the following command:
+//
+// -- switch the LED off
+// INSERT INTO actorvalues (actor_name, actor_value)
+// VALUES ('led', 'off');
+// -- switch the LED on
+// INSERT INTO actorvalues (actor_name, actor_value)
+// VALUES ('led', 'on');
+//
+//
 // Prerequiisites:
 // ---------------------------------------------------------------------------------------
 // This example was tested with the following hardware and software:
