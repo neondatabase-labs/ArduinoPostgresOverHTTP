@@ -1,0 +1,200 @@
+# ArduinoPostgresOverHTTP library
+
+ArduinoPostgresOverHTTP is a library for Arduino and Arduino-compatible micro-controllers that allows you to connect to a PostgreSQL database over HTTP.
+
+This can be used to store sensor data directly into a PostgreSQL database without a middleman server like home assistant.
+You can also read values from the database and use them to control actuators.
+
+This library is designed to work with the ArduinoJson library, which is used to parse JSON data from the PostgreSQL database.
+
+## Important note
+
+To allow different Wifi client implementations the library does not define a dependency on a specific Wifi client library.
+Instead you need to manually install a Wifi client library that implements the `WiFiClient` interface that matches your microcontroller.
+This library has been tested with the following Wifi client libraries:
+- [WiFiNINA](https://docs.arduino.cc/libraries/wifinina/)  e.g. for Arduino RP2040 Connect
+- [ESP8266WiFi] https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WiFi/src/WiFiClient.h
+
+## Usage overview
+
+```C
+...
+#include <WiFiNINA.h>
+#include <ArduinoPostgresOverHTTP.h>
+...
+WiFiSSLClient client;
+ArduinoPostgresOverHttpProxyClient sqlClient(client, DATABASE_URL, NEON_PROXY);
+
+const char* create = R"SQL(
+CREATE TABLE if not exists sensorvalues(
+  measure_time timestamp without time zone DEFAULT now() NOT NULL,
+  sensor_name text NOT NULL, sensor_value float, PRIMARY KEY (sensor_name, measure_time)
+)
+)SQL";
+
+
+int counter = 1;
+int status = WL_IDLE_STATUS;
+
+void setup() {
+    Serial.begin(9600);
+
+    while (status != WL_CONNECTED) {
+        Serial.print("Connecting to WiFi...");
+        status = WiFi.begin(SSID, PASSWORD);
+        delay(10000);
+    }
+    Serial.println("Connected to WiFi");
+
+    // create table for sensor values
+    sqlClient.setQuery(create);
+    const char* errorMessage = sqlClient.execute();
+    while (errorMessage != nullptr) {
+        Serial.println(errorMessage);
+        checkAndPrintWiFiStatus();
+        errorMessage = sqlClient.execute();
+    }
+}
+
+const char* insert = R"SQL(
+INSERT INTO SENSORVALUES (sensor_name, sensor_value) VALUES ('counter', $1::int)
+)SQL";
+
+void loop() {
+    Serial.println("\nExecuting insert statement...");
+    sqlClient.setQuery(insert);
+    JsonArray params = sqlClient.getParams();
+    params.clear();
+    params.add(counter++);
+    const char* errorMessage = sqlClient.execute();
+    if (errorMessage != nullptr) {
+        Serial.println(errorMessage);
+    }
+}
+```
+
+See the [examples](examples) folder for more examples.
+
+## Prerequisites
+
+### PostgreSQL
+You need a PostgreSQL database with the following extensions installed:
+
+- Neon Proxy which supports query over HTTPS with Json payload
+
+You can use a database by Neon (https://neon.tech/) which is a serverless PostgreSQL database with Neon Proxy support.
+
+You can also deploy the open source Neon Proxy on your own server or with other cloud providers.
+See https://github.com/TimoWilhelm/local-neon-http-proxy
+
+### Wifi
+You need a microontroller fast enough to run an SSL client (like BearSSL) and a Wifi client (like WiFiNINA or WiFiEsp32).
+
+Your Wifi controller must have a supported library that implements the WiFiClient.h WifiClient interface
+
+```C
+// WifiClient.h
+class WiFiClient : public Client {
+    ...
+}
+```
+
+for example 
+- Arduino WifiNINA https://docs.arduino.cc/libraries/wifinina/
+- ESP8266WiFi https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WiFi/src/WiFiClient.h
+
+### ArduinoJson library
+
+This library defines a dependency on the ArduinoJson library which is automatically installed by the Arduino IDE.
+You can also install a specific version >=  7.3 of the library manually from the Arduino IDE Library Manager.
+
+This library is used to create and parse the JSON payloads that are sent to and received from the PostgreSQL database's Neon proxy.
+
+## API Getting Started
+
+See src/ArduinoPostgresOverHTTP.h for the latest API reference.
+
+### Provisioning a PostgreSQL database on Neon and getting the connection URL and Neon proxy hostname
+
+Signing up for a free Neon account (no credit card required) is easy. Just go to https://neon.tech and click on "Get started for free".
+For more documentation see https://neon.tech/docs/get-started-with-neon/signing-up
+
+In Neon every database is part of a project.
+Neon projects are created in a specicific region (a location in the cloud). 
+Follow the instructions to create your first project and select the region (location) closest to your microcontroller's Wifi network.
+
+Once you have created a project you can retrieve the connection URL, see
+https://neon.tech/docs/get-started-with-neon/connect-neon#obtaining-connection-details
+
+example of a connection URL: `postgresql://neondb_owner:password@ep-quiet-wildcat-a2l67iq9-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require`
+
+In addition you need the Neon proxy hostname for your region.
+
+example of a Neon proxy hostname: `"api.eu-central-1.aws.neon.tech"`
+
+The proxy hostname is different for each region and the pattern is `api.<region>.aws.neon.tech`.
+
+Here is a table that helps you find the correct Neon proxy hostname for your region:
+
+| Region | Neon Proxy Hostname |
+|--------|---------------------|
+| us-east-1 | api.us-east-1.aws.neon.tech |
+| us-west-2 | api.us-west-2.aws.neon.tech |
+| eu-central-1 | api.eu-central-1.aws.neon.tech |
+| ... | ... |
+
+and so on
+
+### Provisioning the Neon Proxy with your own PostgeSQL database
+
+See https://github.com/TimoWilhelm/local-neon-http-proxy
+
+### Establishing a database connection
+
+Copy arduino_secrets.h.example to arduino_secrets.h and fill in the values for your Wifi network and PostgreSQL database connection.
+
+```C
+#include <WiFiNINA.h>
+#include <ArduinoPostgresOverHTTP.h>
+...
+WiFiSSLClient client;
+ArduinoPostgresOverHttpProxyClient sqlClient(client, DATABASE_URL, NEON_PROXY);
+
+char ssid[] = SECRET_SSID;  // your network SSID (name)
+char pass[] = SECRET_PASS;  // your network password (use for WPA, or use as key for WEP)
+int status = WL_IDLE_STATUS;
+
+void setup() {
+    while (status != WL_CONNECTED) {
+        status = WiFi.begin(SSID, PASSWORD);
+        delay(10000);
+    }
+}
+
+```
+
+todo
+
+### Executing a single query
+
+todo
+
+### Run a SQL statement with parameters
+
+todo
+
+### Retrieving a result set
+
+todo
+
+### Running multiple statements in a transaction
+
+todo
+
+### Error handling
+
+todo
+
+### Reading and writing different PostgreSQL data types
+
+todo: examples
