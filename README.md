@@ -7,6 +7,26 @@ You can also read values from the database and use them to control actuators.
 
 This library is designed to work with the ArduinoJson library, which is used to parse JSON data from the PostgreSQL database.
 
+<!-- toc -- [NeonPostgresOverHTTP library](#neonpostgresoverhttp-library) -->
+- [NeonPostgresOverHTTP library](#neonpostgresoverhttp-library)
+  - [Important note](#important-note)
+  - [Usage overview](#usage-overview)
+  - [Prerequisites](#prerequisites)
+    - [PostgreSQL](#postgresql)
+    - [Wifi](#wifi)
+    - [ArduinoJson library](#arduinojson-library)
+  - [API Getting Started](#api-getting-started)
+    - [Provisioning a PostgreSQL database on Neon and getting the connection URL and Neon proxy hostname](#provisioning-a-postgresql-database-on-neon-and-getting-the-connection-url-and-neon-proxy-hostname)
+    - [Provisioning the Neon Proxy with your own PostgreSQL database](#provisioning-the-neon-proxy-with-your-own-postgresql-database)
+    - [Establishing a database connection](#establishing-a-database-connection)
+    - [Executing a single query](#executing-a-single-query)
+    - [Run a SQL statement with parameters](#run-a-sql-statement-with-parameters)
+    - [Retrieving a result set](#retrieving-a-result-set)
+    - [Running multiple statements in a transaction](#running-multiple-statements-in-a-transaction)
+    - [Error handling and debugging](#error-handling-and-debugging)
+    - [Reading and writing different PostgreSQL data types](#reading-and-writing-different-postgresql-data-types)
+<!-- /toc -->
+
 ## Important note
 
 To allow different Wifi client implementations the library does not define a dependency on a specific Wifi client library.
