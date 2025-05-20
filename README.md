@@ -103,10 +103,19 @@ You need a PostgreSQL database with the following extensions installed:
 
 - Neon Proxy which supports query over HTTPS with Json payload
 
-You can use a database by Neon (https://neon.tech/) which is a serverless PostgreSQL database with Neon Proxy support.
+You can use a database by Neon (https://neon.tech/) which is a serverless PostgreSQL database as a service with Neon Proxy support.
 
-You can also deploy the open source Neon Proxy on your own server or with other cloud providers.
-See https://github.com/TimoWilhelm/local-neon-http-proxy
+You can also deploy the [open source Neon Proxy](https://github.com/neondatabase/neon/blob/main/proxy/README.md#sql-over-http) on your own server or with other cloud providers.
+
+See [DeployNeonProxyWithYourOwnPostgres.md](DeployNeonProxyWithYourOwnPostgres.md) for instructions on how to deploy the Neon Proxy with your own PostgreSQL database.
+
+**Rationale:**
+
+Normally PostgreSQL servers only accept TCP connections from clients like psql or libraries like libpq that speak the Postgres Wire Protocol.
+I am not aware of any library implementation for microcontrollers that implements the Postgres Wire Protocol client.
+
+Thus we use a lightweight HTTP proxy that accepts HTTPS requests and translates them into Postgres Wire Protocol requests.
+Thus we "only" need a TLS client library and JSON generator/parser library to communicate with the proxy.
 
 ### Wifi
 You need a microontroller fast enough to run an SSL client (like BearSSL) and a Wifi client (like WiFiNINA or Espressif ESP32 Wifi library).
@@ -168,7 +177,10 @@ and so on
 
 ### Provisioning the Neon Proxy with your own PostgreSQL database
 
-See https://github.com/TimoWilhelm/local-neon-http-proxy
+See [DeployNeonProxyWithYourOwnPostgres.md](DeployNeonProxyWithYourOwnPostgres.md) for instructions on how to deploy the Neon Proxy with your own PostgreSQL database.
+
+The following example was tested with Upstream PostgreSQL 16.0 and Neon Proxy built locally from source.
+[examples/BasicExample_ESP32C6_with_upstream_postgres](examples/BasicExample_ESP32C6_with_upstream_postgres)
 
 ### Establishing a database connection
 
