@@ -151,3 +151,18 @@ If you use a self-signed TLS certificate you need to either install the CA certi
 ```cpp
 client.setInsecure(); // disables TLS certificate validation, enabling man-in-the-middle attacks
 ```
+
+### Reference material
+
+Neon proxy documentation in the neon.git repository:
+
+https://github.com/neondatabase/neon/blob/main/proxy/README.md#test-proxy-locally
+
+https://github.com/neondatabase/neon/blob/main/proxy/README.md#sql-over-http
+
+Description of setup when you want to use the Neon proxy locally on your own server (e.g. for testing)
+
+https://github.com/TimoWilhelm/local-neon-http-proxy
+
+
+
