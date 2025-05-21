@@ -117,7 +117,12 @@ openssl req -new -x509 -days 365 -nodes -text -out server.crt -keyout server.key
 
 # Compile and run the Neon proxy
 # we need to use --features testing to enable using the local PostgreSQL server as authentication backend
-RUST_LOG=proxy LOGFMT=text cargo run -p proxy --bin proxy --features testing -- --auth-backend postgres --auth-endpoint "postgresql://${PROXY_USER}:${PROXY_PASSWORD}@127.0.0.1:5432/postgres" -c server.crt -k server.key --wss 0.0.0.0:${PROXY_PORT} 
+RUST_LOG=proxy LOGFMT=text cargo run --release --package proxy --bin proxy --features testing -- \
+  --auth-backend postgres \
+  --auth-endpoint "postgresql://${PROXY_USER}:${PROXY_PASSWORD}@127.0.0.1:5432/postgres" \
+  --tls-cert server.crt \
+  --tls-key server.key \
+  --wss 0.0.0.0:4444
 ```
 
 ### Configure your arduino_secrets.h file
