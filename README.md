@@ -25,6 +25,7 @@ This library is designed to work with the ArduinoJson library, which is used to 
     - [Running multiple statements in a transaction](#running-multiple-statements-in-a-transaction)
     - [Error handling and debugging](#error-handling-and-debugging)
     - [Reading and writing different PostgreSQL data types](#reading-and-writing-different-postgresql-data-types)
+  - [Hint for future contributors](#hint-for-future-contributors)
 <!-- /toc -->
 
 ## Important note
@@ -468,3 +469,11 @@ Examples:
 ```
 
 For a complete example see [examples/DataTypesExample](examples/DataTypesExample).
+
+
+## Hint for future contributors
+
+This library is published to the Arduino library manager and is automatically installed by the Arduino IDE, see
+see https://github.com/arduino/library-registry/pull/6314
+and
+https://downloads.arduino.cc/libraries/library_index.json
