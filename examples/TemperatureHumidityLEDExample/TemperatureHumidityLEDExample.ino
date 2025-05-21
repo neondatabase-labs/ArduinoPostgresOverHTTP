@@ -174,10 +174,10 @@ void loop() {
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   if (!dht.readTempAndHumidity(temp_hum_val)) {
     Serial.print("Humidity: ");
-    Serial.print(temp_hum_val[0]);
+    Serial.print(temp_hum_val[1]);
     Serial.print(" %\t");
     Serial.print("Temperature: ");
-    Serial.print(temp_hum_val[1]);
+    Serial.print(temp_hum_val[0]);
     Serial.println(" Degree Celsius");
   } else {
     Serial.println("Could not read sensor values from DHT20");
@@ -191,7 +191,7 @@ void loop() {
   JsonArray params = sqlClient.getParams();
   params.clear();
   params.add("temperature");
-  params.add(temp_hum_val[1]);
+  params.add(temp_hum_val[0]);
   const char* errorMessage = sqlClient.execute();
   if (errorMessage != nullptr) {
     Serial.println(errorMessage);
@@ -201,7 +201,7 @@ void loop() {
   // JsonArray params = sqlClient.getParams(); already done before
   params.clear();
   params.add("humidity");
-  params.add(temp_hum_val[0]);
+  params.add(temp_hum_val[1]);
   errorMessage = sqlClient.execute();
   if (errorMessage != nullptr) {
     Serial.println(errorMessage);
