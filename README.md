@@ -117,6 +117,17 @@ I am not aware of any library implementation for microcontrollers that implement
 Thus we use a lightweight HTTP proxy that accepts HTTPS requests and translates them into Postgres Wire Protocol requests.
 Thus we "only" need a TLS client library and JSON generator/parser library to communicate with the proxy.
 
+```mermaid
+flowchart TD
+    A[Microcontroller with TLS client library and WiFi HW]
+    B[Wifi Router]
+    C[Neon proxy on neon.tech]
+    D[Neon PostgreSQL server on neon.tech]
+
+    A -->|HTTPS with JSON payload with SQL or query results| B --> C
+    C -->|wire protocol payload| D
+```
+
 ### Wifi
 You need a microontroller fast enough to run an SSL client (like BearSSL) and a Wifi client (like WiFiNINA or Espressif ESP32 Wifi library).
 

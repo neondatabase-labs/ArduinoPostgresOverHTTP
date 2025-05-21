@@ -9,24 +9,27 @@ Thus we use a Neon proxy as a lightweight HTTP proxy that accepts HTTPS requests
 Thus on the Arduino/Microcontroller we "only" need a TLS client library and JSON generator/parser library to communicate with the proxy.
 
 
-```txt
-[Microcontroller with TLS client library] 
+```mermaid
+flowchart TD
+    A[Microcontroller with TLS client library]
+    B[Wifi Router]
+    C[Neon proxy]
+    D[PostgreSQL server]
 
-            ^
-            |
-JSON payload with SQL or query results
-            |
-            v
+    A -->|JSON payload with SQL or query results| B --> C
+    C -->|wire protocol payload| D
+```
 
-      [Neon proxy] 
 
-            ^
-            |
-     wire protocol payload
-            |
-            v
+```mermaid
+flowchart TD
+    A[Microcontroller with TLS client library and WiFi HW]
+    B[Wifi Router]
+    C[Neon proxy - self-hosted]
+    D[PostgreSQL server - self-hosted]
 
-    [PostgreSQL server]
+    A -->|HTTPS with JSON payload with SQL or query results| B --> C
+    C -->|wire protocol payload| D
 ```
 
 The simplest way to deploy the Neon proxy is to use the Neon database as a server on [neon.tech](https://neon.tech/) which comes with the Neon proxy pre-installed. If you use that choice you can skip this document.
