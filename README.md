@@ -384,4 +384,76 @@ Serial.println("\nRetrieving last 3 sensor values...");
 
 ### Reading and writing different PostgreSQL data types
 
-todo: examples
+You can read and write different PostgreSQL data types using the `NeonPostgresOverHTTPProxyClient` class.
+
+Examples:
+
+```C
+ {  // INTEGER
+    sqlClient.setQuery("SELECT $1::INTEGER as val1, $2::INTEGER as val2");
+    // specify parameter as integer string literal
+    params.add("123");
+    // specify paramater as int
+    const int parm2 = 4711;
+    params.add(parm2);
+    ...
+    int val1 = row["val1"].as<int>();
+  }
+
+  {  // TEXT
+    sqlClient.setQuery("SELECT $1::TEXT as val1, $2::TEXT as val2");
+    // specify parameter as text string literal
+    params.add("hello");
+    // specify parameter as C++ const char*
+    const char* parm2 = "world";
+    params.add(parm2);
+    ...
+    const char* val1 = row["val1"];  // as string
+  }
+
+  {  // BOOLEAN
+    sqlClient.setQuery("SELECT $1::BOOLEAN as val1, $2::BOOLEAN as val2");
+    // specify parameter as boolean string literal
+    params.add("true");
+    // specify parameter as C++ bool
+    bool parm2 = false;
+    params.add(parm2);
+    ...
+    bool val1 = row["val1"].as<bool>();
+  }
+
+  {  // FLOAT
+    sqlClient.setQuery("SELECT $1::FLOAT as val1, $2::FLOAT as val2");
+    // specify parameter as float string literal
+    params.add("3.14");
+    // specify parameter as C++ float
+    float parm2 = 2.718f;
+    params.add(parm2);
+    ...
+    float val1 = row["val1"].as<float>();
+  }
+
+  {  // TEXT ARRAY
+    sqlClient.setQuery("SELECT $1::TEXT[] as val1");
+    // specify parameter as array literal
+    params.add("{alpha,beta,gamma}");
+    ...
+    JsonArray val1Array = row["val1"].as<JsonArray>();  // parsed array
+    Serial.println("val1 text array elements:");
+    for (const char* element : val1Array) {
+      Serial.println(element);
+    }
+  }
+
+  {  // JSONB
+    sqlClient.setQuery("SELECT $1::JSONB as val1");
+    // specify parameter as JSONB string
+    params.add("{\"a\":1,\"b\":true}");
+    ...
+    JsonObject val1json = row["val1"].as<JsonObject>();
+    int a = val1json["a"].as<int>();
+    bool b = val1json["b"].as<bool>();
+  }
+```
+
+For a complete example see [examples/DataTypesExample](examples/DataTypesExample).
