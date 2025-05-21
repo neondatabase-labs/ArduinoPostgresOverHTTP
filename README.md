@@ -285,7 +285,73 @@ Serial.println("\nRetrieving last 3 sensor values...");
 
 ### Running multiple statements in a transaction
 
-todo
+This section describes how you can run multiple statements in a single database transaction - so that all are either applied together or none of them are applied.
+
+In the terms of Json payload here is an example of a transaction with two statements:
+
+```json
+{
+  "queries": [
+    {
+      "query": "\nUPDATE accounts\nSET balance = balance - $1::DOUBLE PRECISION\nWHERE customer_id = 2;\n",
+      "params": [
+        100
+      ]
+    },
+    {
+      "query": "\nUPDATE accounts\nSET balance = balance + $1::DOUBLE PRECISION\nWHERE customer_id = 1;\n",
+      "params": [
+        100
+      ]
+    }
+  ]
+}
+```
+
+The `NeonPostgresOverHTTPProxyClient` class provides additional methods to support transactions:
+
+Example:
+
+```C
+const char* txn_stmt_1 = R"SQL(
+UPDATE accounts
+SET balance = balance - $1::DOUBLE PRECISION
+WHERE customer_id = 2;
+)SQL";
+
+const char* txn_stmt_2 = R"SQL(
+UPDATE accounts
+SET balance = balance + $1::DOUBLE PRECISION
+WHERE customer_id = 1;
+)SQL";
+...
+// transfer amount of 100.0 from account 2 to account 1 in a single transaction
+  // that executes or fails both associated statements atomically 
+  Serial.println("\nTransferring 100.0 from account 2 to account 1 in a single transaction...");
+  sqlClient.startTransaction();
+  // remove 100.0 from account 2
+  sqlClient.addQueryToTransaction(txn_stmt_1);
+  JsonArray params1 = sqlClient.getParamsForTransactionQuery(0);
+  params1.clear();
+  params1.add(100.0);
+  // add 100.0 to account 1
+  sqlClient.addQueryToTransaction(txn_stmt_2);
+  JsonArray params2 = sqlClient.getParamsForTransactionQuery(1);
+  params2.clear();
+  params2.add(100.0);
+  // execute transaction with both statements
+  errorMessage = sqlClient.executeTransaction();
+  ...
+  Serial.print("\nThe first statement in the transaction updated ");
+  Serial.print(sqlClient.getRowsForTransactionQuery(0));
+  Serial.println(" row(s)");
+
+  Serial.print("\nThe second statement in the transaction updated ");
+  Serial.print(sqlClient.getRowsForTransactionQuery(1));
+  Serial.println(" row(s)");
+```
+
+For a complete example see [examples/TransactionExamples](examples/TransactionExample).
 
 ### Error handling and debugging
 
