@@ -69,7 +69,7 @@ CREATE ROLE arduino WITH SUPERUSER LOGIN PASSWORD 'arduino_password';
 export PROXY_PORT=4444
 # user and password for the neon proxy to connect to the PostgreSQL server for control plane purposes
 export PROXY_USER=postgres
-export PROXY_PASSWORD=proxy_password
+export PGPASSWORD=proxy_password
 # end user and password for the microcontroller to connect through the Neon proxy to the PostgreSQL server
 export ARDUINO_USER=arduino
 export ARDUINO_PASSWORD=arduino_password
@@ -107,9 +107,11 @@ openssl req -new -x509 -days 365 -nodes -text -out server.crt -keyout server.key
 
 # Compile and run the Neon proxy
 # we need to use --features testing to enable using the local PostgreSQL server as authentication backend
+export PGPASSWORD=proxy_password # used implicitly for auth-endpoint if not specified in the command line
+
 RUST_LOG=proxy LOGFMT=text cargo run --release --package proxy --bin proxy --features testing -- \
   --auth-backend postgres \
-  --auth-endpoint "postgresql://${PROXY_USER}:${PROXY_PASSWORD}@127.0.0.1:5432/postgres" \
+  --auth-endpoint "postgresql://${PROXY_USER}@127.0.0.1:5432/postgres" \
   --tls-cert server.crt \
   --tls-key server.key \
   --wss 0.0.0.0:4444
