@@ -8,19 +8,6 @@ I am not aware of any library implementation for microcontrollers that implement
 Thus we use a Neon proxy as a lightweight HTTP proxy that accepts HTTPS requests and translates them into Postgres Wire Protocol requests.
 Thus on the Arduino/Microcontroller we "only" need a TLS client library and JSON generator/parser library to communicate with the proxy.
 
-
-```mermaid
-flowchart TD
-    A[Microcontroller with TLS client library]
-    B[Wifi Router]
-    C[Neon proxy]
-    D[PostgreSQL server]
-
-    A -->|JSON payload with SQL or query results| B --> C
-    C -->|wire protocol payload| D
-```
-
-
 ```mermaid
 flowchart TD
     A[Microcontroller with TLS client library and WiFi HW]
