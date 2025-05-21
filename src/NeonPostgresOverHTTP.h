@@ -46,7 +46,10 @@ public:
     : client(client), connstr(neonPostgresConnectionString), proxy(neonProxy), proxyPort(proxyPort) {
     request.clear();
     response.clear();
+    txnRequest.clear();
+    txnResponse.clear();
     request["params"].to<JsonArray>();
+    txnRequest["queries"].to<JsonArray>();
   }
 
   /**
@@ -101,6 +104,198 @@ public:
     * @return nullptr on success, error message in case of failure
     */
   const char* execute(unsigned long timeout = 20000) {
+    return executeInternal(request, response, timeout);
+  }
+
+  /**
+    * After execution for a query get the number of rows returned.
+    * For a DML statement (INSERT, UPDATE, DELETE) this is the number of rows affected.
+    *
+    * @return number of rows returned or affected
+    */
+  int getRowCount() {
+    return response["rowCount"].as<int>();
+  }
+
+  /**
+    * After execution for a query get the rows returned.
+    *
+    * @return the rows returned as JsonArray
+    */
+  JsonArray getRows() {
+    return response["rows"].as<JsonArray>();
+  }
+
+  JsonArray getFields() {
+    return response["fields"].as<JsonArray>();
+  }
+
+  /** Get complete query result as ArduinoJson JsonDocument.
+    * Mostly used for debugging, normally
+    * getRows(), getFields() and getRowCount() should be used.
+    */
+  JsonDocument& getRawJsonResult() {
+    return response;
+  }
+
+  /** Print complete query result as ArduinoJson JsonDocument.
+    * Mostly used for debugging.
+    * @example
+    * ```cpp
+    * sqlClient.printRawJsonResult(Serial);
+    * ```
+    */
+  void printRawJsonResult(Print& print) {
+    print.println();
+    serializeJson(response, print);
+    print.println();
+  }
+
+  // --------------------------------------------------------------------
+  // same APIs as above with transaction support 
+  // allows to run multiple statements in a single transaction atomically
+  // --------------------------------------------------------------------
+
+  /**
+     * @brief Specify the sql statement you want to execute in a transaction.
+     *        The statement text can use parameter markers.
+     *        If you use parameter markers you must also supply the parameter values before executing the
+     *        statement.
+     * @example
+     * ```cpp
+     * sqlClient.startTransaction();
+     * sqlClient.addQueryToTransaction("SELECT $1::int");
+     * JsonArray params1 = sqlClient.getParamsForTransactionQuery(0);
+     * params1.clear();
+     * params1.add(100);
+     * ```
+     * @param query query SQL statement text (INSERT, UPDATE, DELETE,...) optionally with parameter markers.
+     */
+  void addQueryToTransaction(const char* query) {
+    JsonObject newQuery = txnRequest["queries"].add<JsonObject>();
+    newQuery["query"] = query;
+    // Create the params array inside the new object
+    newQuery["params"].to<JsonArray>();
+  }
+
+  /**
+     * @brief Get the parameter array for a statement in a transaction to clear and 
+     *        set the parameter values for the next statement execution.
+     *      
+     * @example
+     * ```cpp
+     * JsonArray params = client.getParamsForTransactionQuery(0);
+     * params.clear();
+     * params.add(42);
+     * // execute transaction and handle result
+     * ...
+     * ```
+     * 
+     * @param query query SQL statement text (INSERT, UPDATE, DELETE,...) optionally with parameter markers.
+     */
+  JsonArray getParamsForTransactionQuery(size_t queryIndex) {
+    if (queryIndex >= txnRequest["queries"].size()) {
+      return JsonArray();
+    }
+    JsonObject query = txnRequest["queries"][queryIndex];
+    return query["params"];
+  }
+
+  /**
+   * Reset the transaction state in case you have run a transaction before.
+   * Clears all queries and responses.
+   */
+  void startTransaction() {
+    txnRequest.clear();
+    txnResponse.clear();
+    txnRequest["queries"].to<JsonArray>();
+  }
+
+  /**
+    * Connect to proxy, send the SQL statements added to the transaction with
+    * addQueryToTransaction() and parse the result.
+    * 
+    * @param timeout maximum time in milliseconds to wait for response
+    *
+    * @return nullptr on success, error message in case of failure
+    */
+  const char* executeTransaction(unsigned long timeout = 20000) {
+    // activate the following lines for debugging
+    // Serial.println();
+    // serializeJson(txnRequest, Serial);
+    // Serial.println();
+    return executeInternal(txnRequest, txnResponse, timeout);
+  }
+
+  /**
+    * After execution of a transaction for a query get the rows returned.
+    *
+    * @param queryIndex 0-based index of the query in the transaction
+    * 
+    * @return the rows returned as JsonArray
+    */
+  JsonArray getRowsForTransactionQuery(size_t queryIndex) {
+    if (queryIndex >= txnResponse["results"].size()) {
+      return JsonArray();
+    }
+    return txnResponse["results"][queryIndex]["rows"].as<JsonArray>();
+  }
+
+  /**
+    * After execution for a set of queries get the number of rows returned.
+    * For a DML statement (INSERT, UPDATE, DELETE) this is the number of rows affected.
+    *
+    * @param queryIndex 0-based index of the query in the transaction
+    * 
+    * @return number of rows returned or affected
+    */
+  int getRowCountForTransactionQuery(size_t queryIndex) {
+    if (queryIndex >= txnResponse["results"].size()) {
+      return -1;
+    }
+    return txnResponse["results"][queryIndex]["rowCount"].as<int>();
+  }
+
+  JsonArray getFieldsForTransactionQuery(size_t queryIndex) {
+    if (queryIndex >= txnResponse["results"].size()) {
+      return JsonArray();
+    }
+    return txnResponse["results"][queryIndex]["fields"].as<JsonArray>();
+  }
+
+  /** Get complete transaction result as ArduinoJson JsonDocument.
+    * Mostly used for debugging, normally
+    * getRowsForTransactionQuery(), getFieldsForTransactionQuery() and getRowCountForTransactionQuery() should be used.
+    */
+  JsonDocument& getRawJsonResultForTransaction() {
+    return txnResponse;
+  }
+
+  /** Print complete transaction result as ArduinoJson JsonDocument.
+    * Mostly used for debugging.
+    * @example
+    * ```cpp
+    * sqlClient.printRawJsonResultForTransaction(Serial);
+    * ```
+    */
+  void printRawJsonResultForTransaction(Print& print) {
+    print.println();
+    serializeJson(txnResponse, print);
+    print.println();
+  }
+
+private:
+
+  /**
+    * Connect to proxy, send the SQL statement(s) parse the result.
+    * 
+    * @param src JsonDocument containing the queries
+    * @param dst JsonDocument to store the result
+    * @param timeout maximum time in milliseconds to wait for response
+    *
+    * @return nullptr on success, error message in case of failure
+    */
+  const char* executeInternal(JsonDocument& src, JsonDocument& dst, unsigned long timeout = 20000) {
     if (client.connect(proxy, proxyPort)) {
       client.println("POST /sql HTTP/1.1");
       client.print("Host: ");
@@ -109,12 +304,12 @@ public:
       client.println(connstr);
       client.println("Content-Type: application/json");
       client.print("Content-Length: ");
-      size_t length = measureJson(request);
+      size_t length = measureJson(src);
       client.print(length);
       // Send payload after second new-line
       client.print("\r\n\r\n");  // double new line between headers and payload
 
-      size_t written = serializeJson(request, client);
+      size_t written = serializeJson(src, client);
       if (written != length) {
         // Serial.print("Writing ");
         // Serial.print(length);
@@ -149,7 +344,7 @@ public:
           return "Invalid response";
         }
 
-        DeserializationError err = deserializeJson(response, client);
+        DeserializationError err = deserializeJson(dst, client);
         if (err) {
           client.stop();
           return err.c_str();
@@ -160,7 +355,7 @@ public:
         //   Serial.println();
         // }
         client.stop();
-        const char* errormessage = response["message"];
+        const char* errormessage = dst["message"];
         if (errormessage != nullptr) {
           return errormessage;
         }
@@ -175,42 +370,10 @@ public:
     return nullptr;
   }
 
-  int getRowCount() {
-    return response["rowCount"].as<int>();
-  }
-
-  JsonArray getRows() {
-    return response["rows"].as<JsonArray>();
-  }
-
-  JsonArray getFields() {
-    return response["fields"].as<JsonArray>();
-  }
-
-  /** Get complete query result as ArduinoJson JsonDocument.
-    * Mostly used for debugging, normally
-    * getRows(), getFields() and getRowCount() should be used.
-    */
-  JsonDocument& getRawJsonResult() {
-    return response;
-  }
-
-  /** Print complete query result as ArduinoJson JsonDocument.
-    * Mostly used for debugging.
-    * @example
-    * ```cpp
-    * sqlClient.printRawJsonResult(Serial);
-    * ```
-    */
-  void printRawJsonResult(Print& print) {
-    print.println();
-    serializeJson(response, print);
-    print.println();
-  }
-
-private:
   JsonDocument request;
   JsonDocument response;
+  JsonDocument txnRequest;
+  JsonDocument txnResponse;
   WiFiClient& client;
   const char* connstr;
   const char* proxy;
