@@ -473,7 +473,4 @@ For a complete example see [examples/DataTypesExample](examples/DataTypesExample
 
 ## Hint for future contributors
 
-This library is published to the Arduino library manager and is automatically installed by the Arduino IDE, see
-see https://github.com/arduino/library-registry/pull/6314
-and
-https://downloads.arduino.cc/libraries/library_index.json
+This library is published to the Arduino library manager and is automatically installed by the Arduino IDE, see https://github.com/arduino/library-registry/pull/6314 and https://downloads.arduino.cc/libraries/library_index.json
