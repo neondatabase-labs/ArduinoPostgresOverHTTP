@@ -225,7 +225,7 @@ todo
 
 ```C
 const char* insert = R"SQL(
-INSERT INTO SENSORVALUES (sensor_name, sensor_value) VALUES ('counter', $1::int)
+INSERT INTO SENSORVALUES (sensor_name, sensor_value) VALUES ('counter', 1::int)
 )SQL";
 
 sqlClient.setQuery(insert);
