@@ -364,7 +364,7 @@ private:
         return "query timed out";
       }
     } else {
-      client.stop();
+      // client.stop();
       return "cannot connect to proxy over Wifi";
     }
     return nullptr;

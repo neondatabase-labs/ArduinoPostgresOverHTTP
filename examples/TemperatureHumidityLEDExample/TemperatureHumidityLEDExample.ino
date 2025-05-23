@@ -60,6 +60,12 @@
 #include "DHT.h" // DHT 20 humidity and temperature sensor library
 #define DHTTYPE DHT20  // DHT 20 (Temperature and Humidity sensor)
 
+// Watchdog to make sure the script can run unattended 7x24 for many days
+// You can use the Watchdog interface to set up a hardware watchdog timer that resets 
+// the system in the case of system failures or malfunctions.
+// see https://os.mbed.com/docs/mbed-os/v6.16/apis/watchdog.html
+#include <mbed.h>
+
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
 char ssid[] = SECRET_SSID;  // your network SSID (name)
 char pass[] = SECRET_PASS;  // your network password (use for WPA, or use as key for WEP)
@@ -165,6 +171,11 @@ void setup() {
   // init Temperature and Humidity sensor
   Wire.begin();
   dht.begin();
+  
+  // watchdog to make sure the script can run unattended 7x24 for many days
+  // watchdog resets board after max_timeout if it is not kicked
+  // so that we start all over
+  mbed::Watchdog::get_instance().start();
 }
 
 void loop() {
@@ -205,6 +216,9 @@ void loop() {
   errorMessage = sqlClient.execute();
   if (errorMessage != nullptr) {
     Serial.println(errorMessage);
+  } else {
+    // only reset watchdog if we had a successful execution
+    mbed::Watchdog::get_instance().kick(); // Reset the watchdog timer
   }
 
   // retrieve and print led value and set led accordingly
@@ -251,9 +265,9 @@ void loop() {
         Serial.println(errorMessage);
       }
     }
+    // only reset watchdog if we had a successful execution
+    mbed::Watchdog::get_instance().kick(); // Reset the watchdog timer
   }
-  //wait a few seconds before next request
-  delay(8000);
 }
 
 
@@ -267,6 +281,7 @@ void checkAndPrintWiFiStatus() {
     Serial.println(ssid);
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
     status = WiFi.begin(ssid, pass);
+    mbed::Watchdog::get_instance().kick(); // Reset the watchdog timer
   }
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
