@@ -1,0 +1,20 @@
+{
+  "name": "NeonPostgresOverHTTP",
+  "version": "0.8.5",
+  "license": "MIT",
+  "description": "Store sensor data in PostgreSQL. SQL over HTTP for Arduino",
+  "keywords": ["postgres", "http", "sql", "database"],
+  "authors": [
+    {
+      "name": "Peter Bendel",
+      "email": "bodobolero @ gmail.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neondatabase-labs/NeonPostgresOverHTTP.git"
+  },
+  "frameworks": ["arduino"],
+  "platforms": ["espressif32", "espressif8266", "raspberrypi"],
+  "dependencies": ["bblanchon/ArduinoJson"]
+}
